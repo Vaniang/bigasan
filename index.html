@@ -4,13 +4,78 @@
   <meta charset="UTF-8">
   <title>Bigasan App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
+    <style>
     body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
     input, select, button { width: 100%; margin: 5px 0; padding: 10px; }
     .credit { background: #ffeeba; }
     .paid { background: #c3e6cb; }
     .unpaid { background: #f5c6cb; }
     .entry { border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      font-size: 0.8em;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-top: 8px;
+      display: block;
+      width: 100%;
+    }
+    .mark-paid-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      font-size: 0.8em;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-top: 8px;
+      width: 100%;
+    }
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .btn-group button {
+      flex: 1;
+      margin-top: 0;
+      margin-bottom: 0;
+      padding: 6px 0;
+      font-size: 0.8em;
+    }
+    @media (max-width: 480px) {
+      .btn-group button {
+        padding: 5px 0;
+        font-size: 0.7em;
+      }
+    }
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+        max-width: 100%;
+      }
+      h2, h3 {
+        font-size: 1.2em;
+      }
+      input, select, button {
+        padding: 8px;
+        font-size: 1em;
+      }
+      .entry {
+        font-size: 0.9em;
+        padding: 8px;
+        margin: 8px 0;
+      }
+      .delete-btn {
+        padding: 1px 3px;
+        font-size: 0.5em;
+        top: 8px;
+        right: 8px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -36,7 +101,8 @@
       addDoc,
       getDocs,
       updateDoc,
-      doc
+      doc,
+      deleteDoc
     } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -92,7 +158,10 @@
           <strong>${data.name}</strong><br>
           Sacks: ${data.sacks} | Mode: ${data.mode} | Total: ₱${data.total}<br>
           Date: ${data.date}${data.due ? ` | Due: ${data.due}` : ""}<br>
-          ${data.mode === "credit" && !data.paid ? `<button onclick="markPaid('${docSnap.id}')">Mark as Paid</button>` : ""}
+          <div class="btn-group">
+            ${data.mode === "credit" && !data.paid ? `<button class="mark-paid-btn" onclick="markPaid('${docSnap.id}')">Mark as Paid</button>` : ""}
+            <button class="delete-btn" onclick="deleteTransaction('${docSnap.id}')">Delete</button>
+          </div>
         `;
         transDiv.appendChild(div);
       });
@@ -103,6 +172,15 @@
       await updateDoc(docRef, { paid: true });
       loadTransactions();
     }
+
+    async function deleteTransaction(id) {
+      const docRef = doc(db, "transactions", id);
+      await deleteDoc(docRef);
+      loadTransactions();
+    }
+
+    window.markPaid = markPaid;
+    window.deleteTransaction = deleteTransaction;
 
     document.getElementById("addBtn").addEventListener("click", addTransaction);
 
